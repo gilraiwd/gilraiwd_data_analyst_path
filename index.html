@@ -49,7 +49,7 @@
                     </div>
                     <div>
                         <h1 class="text-lg font-bold text-white tracking-tight">Pivot Tracker</h1>
-                        <p class="text-xs text-slate-400" id="header-subtitle">GIS Analyst → 100% Remote BI Analyst</p>
+                        <p class="text-xs text-slate-400" id="header-subtitle">Current Role → Target Role</p>
                     </div>
                 </div>
 
@@ -114,25 +114,25 @@
             <div class="space-y-3">
                 <div>
                     <label class="text-xs font-semibold text-slate-300 block mb-1">Current Job Title</label>
-                    <input id="settings-title" type="text" placeholder="e.g. GIS Analyst" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <input id="settings-title" type="text" placeholder="e.g. Senior Analyst" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
                 </div>
                 <div>
                     <label class="text-xs font-semibold text-slate-300 block mb-1">Current Annual Salary ($)</label>
-                    <input id="settings-current-salary" type="number" placeholder="e.g. 104000" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <input id="settings-current-salary" type="number" placeholder="e.g. 75000" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="text-xs font-semibold text-slate-300 block mb-1">Target Min ($)</label>
-                        <input id="settings-target-min" type="number" placeholder="e.g. 118000" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <input id="settings-target-min" type="number" placeholder="e.g. 90000" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
                     </div>
                     <div>
                         <label class="text-xs font-semibold text-slate-300 block mb-1">Target Max ($)</label>
-                        <input id="settings-target-max" type="number" placeholder="e.g. 155000" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <input id="settings-target-max" type="number" placeholder="e.g. 120000" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
                     </div>
                 </div>
                 <div>
                     <label class="text-xs font-semibold text-slate-300 block mb-1">Target Role Title</label>
-                    <input id="settings-target-title" type="text" placeholder="e.g. 100% Remote BI Analyst" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <input id="settings-target-title" type="text" placeholder="e.g. Remote Data Analyst" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
@@ -190,7 +190,7 @@
                     <div class="relative z-10">
                         <div class="inline-flex items-center space-x-2 bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs px-3 py-1 rounded-full font-medium mb-3">
                             <i class="fa-solid fa-bullseye"></i>
-                            <span id="banner-target-text">Target: 100% Remote Senior BI Analyst</span>
+                            <span id="banner-target-text">Target: Target Role ($90k–$120k)</span>
                         </div>
                         <h2 class="text-2xl font-bold text-white mb-2">GIS to Power BI Pivot Blueprint</h2>
                         <p class="text-sm text-slate-400 max-w-2xl leading-relaxed">
@@ -233,7 +233,7 @@
                             <span class="text-xs font-semibold uppercase tracking-wider">Target Salary Jump</span>
                             <i class="fa-solid fa-arrow-trend-up text-purple-400"></i>
                         </div>
-                        <div class="text-2xl font-bold text-emerald-400" id="dash-salary-jump">+$20k - $50k</div>
+                        <div class="text-2xl font-bold text-emerald-400" id="dash-salary-jump">+$15k - $45k</div>
                         <p class="text-xs text-slate-500 mt-1">Above Current Role Baseline</p>
                     </div>
 
@@ -559,12 +559,33 @@
                             <span>Search Now</span>
                         </button>
                     </div>
+                    <div class="flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-300 pt-1">
+                        <label class="flex items-center gap-1.5 cursor-pointer select-none">
+                            <input type="checkbox" id="filter-keywords" checked
+                                onchange="document.getElementById('search-keywords').disabled = !this.checked; document.getElementById('search-keywords').classList.toggle('opacity-40', !this.checked)"
+                                class="rounded border-slate-700 bg-slate-800 text-blue-500 focus:ring-blue-500 h-3.5 w-3.5">
+                            <span>Filter by title/skills</span>
+                        </label>
+                        <label class="flex items-center gap-1.5 cursor-pointer select-none">
+                            <input type="checkbox" id="filter-remote" checked
+                                class="rounded border-slate-700 bg-slate-800 text-blue-500 focus:ring-blue-500 h-3.5 w-3.5">
+                            <span>Remote only</span>
+                        </label>
+                        <label class="flex items-center gap-1.5 cursor-pointer select-none">
+                            <input type="checkbox" id="filter-salary" checked
+                                class="rounded border-slate-700 bg-slate-800 text-blue-500 focus:ring-blue-500 h-3.5 w-3.5">
+                            <span>Include salary target (Indeed only)</span>
+                        </label>
+                    </div>
                     <p id="live-search-status" class="text-xs text-slate-500"></p>
                     <div id="live-search-results" class="space-y-2"></div>
                     <a id="indeed-fallback-link" href="#" target="_blank" rel="noopener noreferrer" class="hidden text-xs text-blue-400 hover:underline items-center space-x-1.5">
-                        <span>Also open a broader search on Indeed for these terms</span>
+                        <span id="indeed-fallback-label">Also open a broader search on Indeed for these terms</span>
                         <i class="fa-solid fa-external-link text-[10px]"></i>
                     </a>
+                    <p class="text-xs text-slate-600 italic">
+                        Note: only the Indeed link factors in your target minimum salary — the live job board API below mostly doesn't include salary data to filter on.
+                    </p>
                 </div>
 
                 <!-- Role Archetype Cards (skill-based, not tied to specific employers) -->
@@ -800,11 +821,11 @@
 
         const STORAGE_KEY = "pivot_tracker_state_v2";
         const DEFAULT_SETTINGS = {
-            currentTitle: "GIS Analyst",
-            currentSalary: 104000,
-            targetMin: 118000,
-            targetMax: 155000,
-            targetTitle: "100% Remote BI Analyst",
+            currentTitle: "Current Role",
+            currentSalary: 75000,
+            targetMin: 90000,
+            targetMax: 120000,
+            targetTitle: "Target Role",
             startDate: "",
             examDate: ""
         };
@@ -1241,17 +1262,36 @@
             const resultsEl = document.getElementById('live-search-results');
             const indeedLink = document.getElementById('indeed-fallback-link');
 
+            const useKeywords = document.getElementById('filter-keywords').checked;
+            const useRemote = document.getElementById('filter-remote').checked;
+            const useSalary = document.getElementById('filter-salary').checked;
+
             const rawInput = document.getElementById('search-keywords').value.trim();
-            const keywords = rawInput.split(',').map(k => k.trim().toLowerCase()).filter(Boolean);
-            if (keywords.length === 0) {
-                statusEl.innerText = 'Enter at least one skill or job title to search for.';
+            const keywords = useKeywords
+                ? rawInput.split(',').map(k => k.trim().toLowerCase()).filter(Boolean)
+                : [];
+
+            if (useKeywords && keywords.length === 0) {
+                statusEl.innerText = 'Enter at least one skill or job title, or uncheck "Filter by title/skills" to browse everything.';
                 return;
             }
 
-            // Always give a working Indeed link for these exact terms, since Indeed
-            // has no public API a static page can call directly.
-            const indeedQuery = encodeURIComponent(keywords.join(' '));
-            indeedLink.href = `https://www.indeed.com/jobs?q=${indeedQuery}&l=Remote`;
+            // Always give a working Indeed link for these terms, since Indeed has no
+            // public API a static page can call directly. Indeed's search box treats
+            // a "$X,XXX" token in the query as a soft salary floor.
+            const s = appState.settings || DEFAULT_SETTINGS;
+            const salaryToken = (useSalary && s.targetMin) ? `$${s.targetMin.toLocaleString()}` : '';
+            const indeedQueryParts = [keywords.join(' '), salaryToken].filter(Boolean);
+            const indeedQuery = encodeURIComponent(indeedQueryParts.join(' '));
+            const indeedUrl = `https://www.indeed.com/jobs?q=${indeedQuery}` + (useRemote ? '&l=Remote' : '');
+            indeedLink.href = indeedUrl;
+
+            const labelParts = [];
+            if (useRemote) labelParts.push('remote');
+            if (salaryToken) labelParts.push(`${salaryToken}+`);
+            document.getElementById('indeed-fallback-label').innerText = labelParts.length
+                ? `Also open a broader search on Indeed (${labelParts.join(', ')})`
+                : `Also open a broader search on Indeed for these terms`;
             indeedLink.classList.remove('hidden');
             indeedLink.classList.add('flex');
 
@@ -1260,7 +1300,8 @@
             statusEl.innerText = '';
             resultsEl.innerHTML = '';
 
-            const matches = (title, tags) => {
+            const matchesKeywords = (title, tags) => {
+                if (keywords.length === 0) return true; // keyword filter is off — match everything
                 const haystack = (title + ' ' + (tags || []).join(' ')).toLowerCase();
                 return keywords.some(k => haystack.includes(k));
             };
@@ -1274,7 +1315,7 @@
                 if (!res.ok) throw new Error(`Arbeitnow returned ${res.status}`);
                 const data = await res.json();
                 const jobs = (data.data || [])
-                    .filter(j => matches(j.title, j.tags))
+                    .filter(j => matchesKeywords(j.title, j.tags) && (!useRemote || j.remote))
                     .map(j => ({
                         title: j.title,
                         company: j.company_name,
@@ -1292,7 +1333,7 @@
             if (results.length === 0) {
                 resultsEl.innerHTML = sourceErrors > 0
                     ? `<p class="text-xs text-slate-500 p-3">Couldn't reach the job board API right now — use the Indeed link below instead.</p>`
-                    : `<p class="text-xs text-slate-500 p-3">No matching listings right now for those terms. Try broader keywords, or use the Indeed link below.</p>`;
+                    : `<p class="text-xs text-slate-500 p-3">No matching listings right now for those filters. Try loosening one (uncheck remote-only, broaden keywords), or use the Indeed link below.</p>`;
             } else {
                 resultsEl.innerHTML = results.slice(0, 10).map(j => `
                     <a href="${j.url}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between bg-slate-950/60 border border-slate-800 rounded-lg p-3 hover:border-blue-700 transition-colors">
@@ -1437,6 +1478,32 @@
             closeSettings();
         }
 
+        let lastAutoKeywords = "power bi, dax, sql, business intelligence, data analyst, data governance";
+
+        function buildSearchKeywords(s) {
+            const cleanTitle = (s.targetTitle || '')
+                .replace(/100%/gi, '')
+                .replace(/[^\w\s]/g, ' ')
+                .trim()
+                .toLowerCase();
+            const base = ['power bi', 'dax', 'sql', 'data analyst', 'data governance'];
+            const combined = cleanTitle ? [cleanTitle, ...base] : base;
+            return [...new Set(combined.map(k => k.trim()).filter(Boolean))].join(', ');
+        }
+
+        function syncSearchKeywords() {
+            const s = appState.settings || DEFAULT_SETTINGS;
+            const field = document.getElementById('search-keywords');
+            if (!field) return;
+            const newKeywords = buildSearchKeywords(s);
+            // Only overwrite if the box still holds the previous auto-generated text
+            // (or is empty) — if you've typed your own terms, leave them alone.
+            if (field.value.trim() === lastAutoKeywords.trim() || field.value.trim() === '') {
+                field.value = newKeywords;
+            }
+            lastAutoKeywords = newKeywords;
+        }
+
         function renderSettings() {
             const s = appState.settings || DEFAULT_SETTINGS;
             const fmt = (n) => `$${Math.round(n / 1000)}k`;
@@ -1452,6 +1519,8 @@
             } else {
                 jumpEl.innerText = `+${fmt(Math.max(jumpLow, 0))} - ${fmt(jumpHigh)}`;
             }
+
+            syncSearchKeywords();
         }
 
         function printChecklist() {
