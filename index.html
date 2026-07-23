@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-900">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Pivot Tracker: GIS to Remote BI Analyst</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .tab-btn.active {
+            background-color: #3b82f6;
+            color: #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+        }
+    </style>
+</head>
+<body class="h-full text-slate-100 flex flex-col bg-slate-950 antialiased selection:bg-blue-500 selection:text-white">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Brand Title -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-emerald-400 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-500/20">
+                        <i class="fa-solid fa-compass-drafting"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold text-white tracking-tight">Pivot Tracker</h1>
+                        <p class="text-xs text-slate-400">GS-12 GIS → 100% Remote BI Analyst</p>
+                    </div>
+                </div>
+
+                <!-- Global Progress Pill -->
+                <div class="hidden md:flex items-center space-x-4 bg-slate-800/80 px-4 py-2 rounded-xl border border-slate-700/60">
+                    <div class="text-right">
+                        <span id="header-percent" class="text-sm font-bold text-emerald-400">0%</span>
+                        <span class="text-xs text-slate-400 block">Overall Progress</span>
+                    </div>
+                    <div class="w-28 bg-slate-700 h-2.5 rounded-full overflow-hidden">
+                        <div id="header-progress-bar" class="bg-gradient-to-r from-blue-500 to-emerald-400 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Reset Data Button -->
+                <button onclick="confirmReset()" class="text-xs text-slate-400 hover:text-red-400 transition-colors flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-slate-800 hover:border-red-900/50">
+                    <i class="fa-solid fa-arrow-rotate-left"></i>
+                    <span class="hidden sm:inline">Reset Progress</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Layout -->
+    <div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row gap-6">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="w-full md:w-64 flex-shrink-0 flex flex-row md:flex-col gap-2 overflow-x-auto custom-scrollbar pb-2 md:pb-0">
+            <button onclick="switchTab('dashboard')" id="tab-btn-dashboard" class="tab-btn active flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-300 hover:bg-slate-800 transition-all text-left whitespace-nowrap">
+                <i class="fa-solid fa-chart-pie w-5 text-center"></i>
+                <span>Dashboard</span>
+            </button>
+            <button onclick="switchTab('checklist')" id="tab-btn-checklist" class="tab-btn flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-300 hover:bg-slate-800 transition-all text-left whitespace-nowrap">
+                <i class="fa-solid fa-list-check w-5 text-center"></i>
+                <span>4-Month Checklist</span>
+            </button>
+            <button onclick="switchTab('portfolio')" id="tab-btn-portfolio" class="tab-btn flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-300 hover:bg-slate-800 transition-all text-left whitespace-nowrap">
+                <i class="fa-solid fa-folder-kanban w-5 text-center"></i>
+                <span>Portfolio Projects</span>
+            </button>
+            <button onclick="switchTab('jobs')" id="tab-btn-jobs" class="tab-btn flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-300 hover:bg-slate-800 transition-all text-left whitespace-nowrap">
+                <i class="fa-solid fa-briefcase w-5 text-center"></i>
+                <span>Jobs & Target Market</span>
+            </button>
+            <button onclick="switchTab('resources')" id="tab-btn-resources" class="tab-btn flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-300 hover:bg-slate-800 transition-all text-left whitespace-nowrap">
+                <i class="fa-solid fa-graduation-cap w-5 text-center"></i>
+                <span>Resource Vault</span>
+            </button>
+        </aside>
+
+        <!-- Main Content Panel Area -->
+        <main class="flex-1 min-w-0">
+
+            <!-- TAB 1: DASHBOARD VIEW -->
+            <section id="view-dashboard" class="space-y-6">
+                <!-- Welcome Banner -->
+                <div class="bg-gradient-to-r from-blue-900/40 via-slate-900 to-emerald-900/30 border border-slate-800 rounded-2xl p-6 relative overflow-hidden">
+                    <div class="relative z-10">
+                        <div class="inline-flex items-center space-x-2 bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs px-3 py-1 rounded-full font-medium mb-3">
+                            <i class="fa-solid fa-bullseye"></i>
+                            <span>Target: 100% Remote Senior BI Analyst ($125k–$155k)</span>
+                        </div>
+                        <h2 class="text-2xl font-bold text-white mb-2">GIS to Power BI Pivot Blueprint</h2>
+                        <p class="text-sm text-slate-400 max-w-2xl leading-relaxed">
+                            Repurposing 10+ years of spatial data logic, database management, and scripting into DAX modeling, Power BI visual architecture, and SQL enterprise analytics.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Key Metric Cards Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                        <div class="flex items-center justify-between text-slate-400 mb-2">
+                            <span class="text-xs font-semibold uppercase tracking-wider">Overall Progress</span>
+                            <i class="fa-solid fa-spinner text-blue-400"></i>
+                        </div>
+                        <div class="text-3xl font-extrabold text-white" id="dash-percent">0%</div>
+                        <p class="text-xs text-slate-500 mt-1"><span id="dash-tasks-completed">0</span> of <span id="dash-tasks-total">24</span> tasks complete</p>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                        <div class="flex items-center justify-between text-slate-400 mb-2">
+                            <span class="text-xs font-semibold uppercase tracking-wider">Current Phase</span>
+                            <i class="fa-solid fa-calendar-check text-emerald-400"></i>
+                        </div>
+                        <div class="text-lg font-bold text-white truncate" id="dash-current-phase">Month 1: BI Foundations</div>
+                        <p class="text-xs text-emerald-400 mt-1" id="dash-phase-status">In Progress</p>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                        <div class="flex items-center justify-between text-slate-400 mb-2">
+                            <span class="text-xs font-semibold uppercase tracking-wider">Portfolio Status</span>
+                            <i class="fa-solid fa-layer-group text-amber-400"></i>
+                        </div>
+                        <div class="text-3xl font-extrabold text-white" id="dash-portfolio-count">0/3</div>
+                        <p class="text-xs text-slate-500 mt-1">Projects Built & Hosted</p>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                        <div class="flex items-center justify-between text-slate-400 mb-2">
+                            <span class="text-xs font-semibold uppercase tracking-wider">Target Salary Jump</span>
+                            <i class="fa-solid fa-arrow-trend-up text-purple-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-emerald-400">+$20k - $50k</div>
+                        <p class="text-xs text-slate-500 mt-1">Above GS-12 Step 6 Baseline</p>
+                    </div>
+                </div>
+
+                <!-- Monthly Progress Breakdowns -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                    <h3 class="text-base font-bold text-white mb-4 flex items-center space-x-2">
+                        <i class="fa-solid fa-chart-line text-blue-500"></i>
+                        <span>Monthly Milestone Completion</span>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="bg-slate-950 p-4 rounded-lg border border-slate-800">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-xs font-bold text-blue-400 uppercase">Month 1</span>
+                                <span id="m1-percent" class="text-xs font-bold text-slate-300">0%</span>
+                            </div>
+                            <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                                <div id="m1-bar" class="bg-blue-500 h-full transition-all duration-300" style="width:0%"></div>
+                            </div>
+                            <span class="text-xs text-slate-500 mt-2 block">Power BI & Modeling</span>
+                        </div>
+
+                        <div class="bg-slate-950 p-4 rounded-lg border border-slate-800">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-xs font-bold text-emerald-400 uppercase">Month 2</span>
+                                <span id="m2-percent" class="text-xs font-bold text-slate-300">0%</span>
+                            </div>
+                            <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                                <div id="m2-bar" class="bg-emerald-500 h-full transition-all duration-300" style="width:0%"></div>
+                            </div>
+                            <span class="text-xs text-slate-500 mt-2 block">Advanced DAX & SQL</span>
+                        </div>
+
+                        <div class="bg-slate-950 p-4 rounded-lg border border-slate-800">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-xs font-bold text-amber-400 uppercase">Month 3</span>
+                                <span id="m3-percent" class="text-xs font-bold text-slate-300">0%</span>
+                            </div>
+                            <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                                <div id="m3-bar" class="bg-amber-500 h-full transition-all duration-300" style="width:0%"></div>
+                            </div>
+                            <span class="text-xs text-slate-500 mt-2 block">Portfolio & Stealth Execution</span>
+                        </div>
+
+                        <div class="bg-slate-950 p-4 rounded-lg border border-slate-800">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-xs font-bold text-purple-400 uppercase">Month 4</span>
+                                <span id="m4-percent" class="text-xs font-bold text-slate-300">0%</span>
+                            </div>
+                            <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                                <div id="m4-bar" class="bg-purple-500 h-full transition-all duration-300" style="width:0%"></div>
+                            </div>
+                            <span class="text-xs text-slate-500 mt-2 block">PL-300 Exam & Deployment</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Skill Radar & Transition Chart -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                        <h3 class="text-base font-bold text-white mb-2">Competency Evolution</h3>
+                        <p class="text-xs text-slate-400 mb-4">Leveraging spatial database logic into business intelligence formulas.</p>
+                        <div class="relative h-64 w-full">
+                            <canvas id="skillRadarChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                        <h3 class="text-base font-bold text-white mb-2">Salary Benchmark Comparison</h3>
+                        <p class="text-xs text-slate-400 mb-4">Comparing current GS-12 Step 6 baseline against target remote roles.</p>
+                        <div class="relative h-64 w-full">
+                            <canvas id="salaryBarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: INTERACTIVE CHECKLIST VIEW -->
+            <section id="view-checklist" class="hidden space-y-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">4-Month Pivot Execution Checklist</h2>
+                        <p class="text-sm text-slate-400">Click items as you complete them to automatically update your progress and charts.</p>
+                    </div>
+                </div>
+
+                <!-- MONTH 1 SECTION -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div class="flex items-center space-x-3">
+                            <span class="px-2.5 py-1 bg-blue-500/10 text-blue-400 text-xs font-bold rounded-md border border-blue-500/20">MONTH 1</span>
+                            <h3 class="text-lg font-bold text-white">Power BI Foundations & Data Modeling</h3>
+                        </div>
+                        <span id="m1-count-badge" class="text-xs font-semibold text-slate-400">0/6 Done</span>
+                    </div>
+
+                    <div class="space-y-3" id="month-1-items">
+                        <!-- Checklist Items Injected via JS -->
+                    </div>
+                </div>
+
+                <!-- MONTH 2 SECTION -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div class="flex items-center space-x-3">
+                            <span class="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-bold rounded-md border border-emerald-500/20">MONTH 2</span>
+                            <h3 class="text-lg font-bold text-white">Advanced DAX & Interactive SQL Practice</h3>
+                        </div>
+                        <span id="m2-count-badge" class="text-xs font-semibold text-slate-400">0/6 Done</span>
+                    </div>
+
+                    <div class="space-y-3" id="month-2-items">
+                        <!-- Checklist Items Injected via JS -->
+                    </div>
+                </div>
+
+                <!-- MONTH 3 SECTION -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div class="flex items-center space-x-3">
+                            <span class="px-2.5 py-1 bg-amber-500/10 text-amber-400 text-xs font-bold rounded-md border border-amber-500/20">MONTH 3</span>
+                            <h3 class="text-lg font-bold text-white">Portfolio Development & Stealth Workplace Execution</h3>
+                        </div>
+                        <span id="m3-count-badge" class="text-xs font-semibold text-slate-400">0/6 Done</span>
+                    </div>
+
+                    <div class="space-y-3" id="month-3-items">
+                        <!-- Checklist Items Injected via JS -->
+                    </div>
+                </div>
+
+                <!-- MONTH 4 SECTION -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div class="flex items-center space-x-3">
+                            <span class="px-2.5 py-1 bg-purple-500/10 text-purple-400 text-xs font-bold rounded-md border border-purple-500/20">MONTH 4</span>
+                            <h3 class="text-lg font-bold text-white">Certification & Remote Market Deployment</h3>
+                        </div>
+                        <span id="m4-count-badge" class="text-xs font-semibold text-slate-400">0/6 Done</span>
+                    </div>
+
+                    <div class="space-y-3" id="month-4-items">
+                        <!-- Checklist Items Injected via JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: PORTFOLIO PROJECTS VIEW -->
+            <section id="view-portfolio" class="hidden space-y-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">Portfolio Project Hub</h2>
+                    <p class="text-sm text-slate-400">Build these 4 functional reports using open datasets to prove end-to-end Power BI & SQL capability to recruiters.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- Project 1 -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-1 bg-blue-500/10 text-blue-400 text-xs font-bold rounded border border-blue-500/20">PROJECT 1</span>
+                                <span class="text-xs text-slate-500"><i class="fa-solid fa-database mr-1"></i> Data.gov / Municipal</span>
+                            </div>
+                            <h3 class="text-lg font-bold text-white mb-2">Public Works & Asset Maintenance Lifecycle</h3>
+                            <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+                                Track facility work orders, preventative maintenance schedules, and deferred repair costs across municipal or installation infrastructure.
+                            </p>
+                            <div class="bg-slate-950 p-3 rounded-lg text-xs space-y-1.5 border border-slate-800 text-slate-300 mb-4">
+                                <div><strong class="text-blue-400">Key Skills:</strong> Star Schema Modeling, Time Intelligence (`SAMEPERIODLASTYEAR`), Backlog Cost DAX formulas.</div>
+                                <div><strong class="text-blue-400">Features:</strong> KPI cards, maintenance backlog trendlines, region/priority slicers.</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-3 border-t border-slate-800">
+                            <label class="flex items-center space-x-2 text-xs text-slate-300 cursor-pointer">
+                                <input type="checkbox" id="proj-1-check" onchange="toggleProject('proj1')" class="rounded border-slate-700 bg-slate-800 text-blue-500 focus:ring-blue-500 h-4 w-4">
+                                <span>Mark Completed & Built</span>
+                            </label>
+                            <a href="https://data.gov" target="_blank" rel="noopener noreferrer" class="text-xs text-blue-400 hover:underline flex items-center space-x-1">
+                                <span>Find Datasets</span>
+                                <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Project 2 -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-bold rounded border border-emerald-500/20">PROJECT 2</span>
+                                <span class="text-xs text-slate-500"><i class="fa-solid fa-database mr-1"></i> Kaggle / Relational</span>
+                            </div>
+                            <h3 class="text-lg font-bold text-white mb-2">Enterprise Data Quality & Schema Audit Dashboard</h3>
+                            <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+                                Audit non-compliant data entry, missing metadata, and orphan records across departmental database tables.
+                            </p>
+                            <div class="bg-slate-950 p-3 rounded-lg text-xs space-y-1.5 border border-slate-800 text-slate-300 mb-4">
+                                <div><strong class="text-emerald-400">Key Skills:</strong> SQL `LEFT JOIN` orphan detection, Row-Level Security (RLS), Data Hygiene Scorecard DAX.</div>
+                                <div><strong class="text-emerald-400">Features:</strong> Data hygiene scorecard %, high-priority alert badges, historical trend tracking.</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-3 border-t border-slate-800">
+                            <label class="flex items-center space-x-2 text-xs text-slate-300 cursor-pointer">
+                                <input type="checkbox" id="proj-2-check" onchange="toggleProject('proj2')" class="rounded border-slate-700 bg-slate-800 text-emerald-500 focus:ring-emerald-500 h-4 w-4">
+                                <span>Mark Completed & Built</span>
+                            </label>
+                            <a href="https://www.kaggle.com/datasets" target="_blank" rel="noopener noreferrer" class="text-xs text-emerald-400 hover:underline flex items-center space-x-1">
+                                <span>Find Datasets</span>
+                                <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Project 3 -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-1 bg-amber-500/10 text-amber-400 text-xs font-bold rounded border border-amber-500/20">PROJECT 3</span>
+                                <span class="text-xs text-slate-500"><i class="fa-solid fa-database mr-1"></i> Maven Playground</span>
+                            </div>
+                            <h3 class="text-lg font-bold text-white mb-2">Corporate Real Estate & Facility Space Utilization</h3>
+                            <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+                                Evaluate lease cost per square foot, badge-in occupancy trends, and underutilized space across corporate facilities.
+                            </p>
+                            <div class="bg-slate-950 p-3 rounded-lg text-xs space-y-1.5 border border-slate-800 text-slate-300 mb-4">
+                                <div><strong class="text-amber-400">Key Skills:</strong> Data blending (leases + occupancy logs), Matrix drill-throughs, lease expiration variance logic.</div>
+                                <div><strong class="text-amber-400">Features:</strong> Cost per occupied Sq Ft matrix, lease renewal calendar, low-occupancy alerts.</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-3 border-t border-slate-800">
+                            <label class="flex items-center space-x-2 text-xs text-slate-300 cursor-pointer">
+                                <input type="checkbox" id="proj-3-check" onchange="toggleProject('proj3')" class="rounded border-slate-700 bg-slate-800 text-amber-500 focus:ring-amber-500 h-4 w-4">
+                                <span>Mark Completed & Built</span>
+                            </label>
+                            <a href="https://www.mavenanalytics.io/data-playground" target="_blank" rel="noopener noreferrer" class="text-xs text-amber-400 hover:underline flex items-center space-x-1">
+                                <span>Find Datasets</span>
+                                <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Project 4 (Stealth Project) -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-1 bg-purple-500/10 text-purple-400 text-xs font-bold rounded border border-purple-500/20">PROJECT 4</span>
+                                <span class="text-xs text-slate-500"><i class="fa-solid fa-building-columns mr-1"></i> Current Workplace</span>
+                            </div>
+                            <h3 class="text-lg font-bold text-white mb-2">Workplace "Stealth" Report Automation</h3>
+                            <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+                                Take an existing manual spreadsheet or quarterly reporting workflow at your current role and rebuild it into an automated Power BI report.
+                            </p>
+                            <div class="bg-slate-950 p-3 rounded-lg text-xs space-y-1.5 border border-slate-800 text-slate-300 mb-4">
+                                <div><strong class="text-purple-400">Key Impact:</strong> Proves production BI delivery on your resume with quantifiable efficiency wins.</div>
+                                <div><strong class="text-purple-400">Features:</strong> Automated refresh schema, reduced reporting processing time.</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-3 border-t border-slate-800">
+                            <label class="flex items-center space-x-2 text-xs text-slate-300 cursor-pointer">
+                                <input type="checkbox" id="proj-4-check" onchange="toggleProject('proj4')" class="rounded border-slate-700 bg-slate-800 text-purple-500 focus:ring-purple-500 h-4 w-4">
+                                <span>Mark Completed & Built</span>
+                            </label>
+                            <span class="text-xs text-slate-500">Internal Win</span>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- TAB 4: TARGET JOBS & APPLICATIONS VIEW -->
+            <section id="view-jobs" class="hidden space-y-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">Target Job Postings & Tracker</h2>
+                    <p class="text-sm text-slate-400">Active market postings matching your retooled profile, plus an application logger.</p>
+                </div>
+
+                <!-- Active Sample Job Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">100% Remote</span>
+                                <h3 class="text-base font-bold text-white mt-1">Operations Business Analyst</h3>
+                                <p class="text-xs text-slate-400">Spring Health</p>
+                            </div>
+                            <span class="text-sm font-extrabold text-emerald-400">$106.5k – $118k</span>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            Focuses on SQL queries, Power BI / Looker reporting, and partnering with operations leadership to translate data into decision metrics.
+                        </p>
+                        <a href="https://job-boards.greenhouse.io/springhealth66/jobs/4710036005" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 text-xs text-blue-400 hover:underline">
+                            <span>View Posting on Greenhouse</span>
+                            <i class="fa-solid fa-external-link text-[10px]"></i>
+                        </a>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Remote / Defense</span>
+                                <h3 class="text-base font-bold text-white mt-1">Data Governance Specialist</h3>
+                                <p class="text-xs text-slate-400">LMI Consulting</p>
+                            </div>
+                            <span class="text-sm font-extrabold text-emerald-400">$85.9k – $145.1k</span>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            Supports federal & defense data cataloging, metadata policies, QA/QC audits, and database schema compliance.
+                        </p>
+                        <a href="https://www.indeed.com/q-data-governance-l-remote-jobs.html" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 text-xs text-blue-400 hover:underline">
+                            <span>Search Listings on Indeed</span>
+                            <i class="fa-solid fa-external-link text-[10px]"></i>
+                        </a>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">100% Remote</span>
+                                <h3 class="text-base font-bold text-white mt-1">Senior Power BI & BI Data Analyst</h3>
+                                <p class="text-xs text-slate-400">Sentara Health</p>
+                            </div>
+                            <span class="text-sm font-extrabold text-emerald-400">$80.2k – $133.6k</span>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            Requires SQL, DAX, and Power BI modeling to create operational executive dashboards in a stable health-tech sector.
+                        </p>
+                        <a href="https://www.indeed.com/q-power-bi-l-remote-jobs.html" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 text-xs text-blue-400 hover:underline">
+                            <span>Search Listings on Indeed</span>
+                            <i class="fa-solid fa-external-link text-[10px]"></i>
+                        </a>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="text-xs font-semibold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">Telework / Level 4</span>
+                                <h3 class="text-base font-bold text-white mt-1">ERP Business Analyst Staff / BI</h3>
+                                <p class="text-xs text-slate-400">Lockheed Martin</p>
+                            </div>
+                            <span class="text-sm font-extrabold text-emerald-400">$114.7k – $198.7k</span>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            High-end role leveraging defense contractor background for material financial management and enterprise business intelligence.
+                        </p>
+                        <a href="https://www.indeed.com/q-power-bi-l-remote-jobs.html" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 text-xs text-blue-400 hover:underline">
+                            <span>Search Listings on Indeed</span>
+                            <i class="fa-solid fa-external-link text-[10px]"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Custom Application Tracker Table -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <h3 class="text-base font-bold text-white">Your Job Application Logger</h3>
+                        <button onclick="addApplicationPrompt()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors flex items-center space-x-1.5 self-start">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Log New Application</span>
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-950 text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                                <tr>
+                                    <th class="p-3">Company</th>
+                                    <th class="p-3">Role Title</th>
+                                    <th class="p-3">Target Pay</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="application-list-body" class="divide-y divide-slate-800 text-slate-300">
+                                <!-- Dynamic Application Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: RESOURCE VAULT VIEW -->
+            <section id="view-resources" class="hidden space-y-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">Resource Vault & Quick Links</h2>
+                    <p class="text-sm text-slate-400">Direct links to 100% free learning materials, SQL playgrounds, software, and portfolio tools.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    
+                    <!-- Core Software -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+                        <div class="flex items-center space-x-2 text-blue-400 font-bold text-sm">
+                            <i class="fa-solid fa-desktop"></i>
+                            <span>Core Software & Docs</span>
+                        </div>
+                        <ul class="space-y-2 text-xs">
+                            <li>
+                                <a href="https://www.microsoft.com/en-us/power-platform/products/power-bi/desktop" target="_blank" rel="noopener noreferrer" class="text-slate-300 hover:text-blue-400 hover:underline flex items-center justify-between">
+                                    <span>Power BI Desktop (Free)</span>
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500"></i>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/pl-300" target="_blank" rel="noopener noreferrer" class="text-slate-300 hover:text-blue-400 hover:underline flex items-center justify-between">
+                                    <span>Microsoft PL-300 Study Guide</span>
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500"></i>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://dax.guide" target="_blank" rel="noopener noreferrer" class="text-slate-300 hover:text-blue-400 hover:underline flex items-center justify-between">
+                                    <span>DAX.guide (Syntax Lookup)</span>
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Free SQL Practice -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+                        <div class="flex items-center space-x-2 text-emerald-400 font-bold text-sm">
+                            <i class="fa-solid fa-terminal"></i>
+                            <span>Interactive SQL Tools</span>
+                        </div>
+                        <ul class="space-y-2 text-xs">
+                            <li>
+                                <a href="https://sqlbolt.com/" target="_blank" rel="noopener noreferrer" class="text-slate-300 hover:text-emerald-400 hover:underline flex items-center justify-between">
+                                    <span>SQLBolt (Interactive Lessons)</span>
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500"></i>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://mode.com/sql-tutorial/" target="_blank" rel="noopener noreferrer" class="text-slate-300 hover:text-emerald-400 hover:underline flex items-center justify-between">
+                                    <span>Mode Analytics SQL Tutorial</span>
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500"></i>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://leetcode.com/problemset/database/" target="_blank" rel="noopener noreferrer" class="text-slate-300 hover:text-emerald-400 hover:underline flex items-center justify-between">
+                                    <span>LeetCode Database Problems</span>
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Datasets & Portfolio -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+                        <div class="flex items-center space-x-2 text-amber-400 font-bold text-sm">
+                            <i class="fa-solid fa-globe"></i>
+                            <span>Datasets & Portfolio</span>
+                        </div>
+                        <ul class="space-y-2 text-xs">
+                            <li>
+                                <a href="https://www.kaggle.com/datasets" target="_blank" rel="noopener noreferrer" class="text-slate-300 hover:text-amber-400 hover:underline flex items-center justify-between">
+                                    <span>Kaggle Datasets</span>
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500"></i>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.mavenanalytics.io/data-playground" target="_blank" rel="noopener noreferrer" class="text-slate-300 hover:text-amber-400 hover:underline flex items-center justify-between">
+                                    <span>Maven Data Playground</span>
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500"></i>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.novypro.com/" target="_blank" rel="noopener noreferrer" class="text-slate-300 hover:text-amber-400 hover:underline flex items-center justify-between">
+                                    <span>NovyPro Portfolio Hosting</span>
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        const TASKS_DATA = {
+            m1: [
+                { id: "m1_1", text: "Download & Install Power BI Desktop (Free)", link: "https://www.microsoft.com/en-us/power-platform/products/power-bi/desktop" },
+                { id: "m1_2", text: "Complete MS Learn: Prepare Data for Analysis (Power Query)", link: "https://learn.microsoft.com/en-us/training/paths/prepare-data-power-bi/" },
+                { id: "m1_3", text: "Complete MS Learn: Model Data in Power BI (Star Schema)", link: "https://learn.microsoft.com/en-us/training/paths/model-data-power-bi/" },
+                { id: "m1_4", text: "Complete MS Learn: Visualize Data in Power BI", link: "https://learn.microsoft.com/en-us/training/paths/visualize-data-power-bi/" },
+                { id: "m1_5", text: "Watch freeCodeCamp 3-Hour Power BI Course for Beginners", link: "https://www.youtube.com/watch?v=3u7MQz1EyPY" },
+                { id: "m1_6", text: "Subscribe to Guy in a Cube YouTube Channel for Optimization", link: "https://www.youtube.com/@GuyInACube" }
+            ],
+            m2: [
+                { id: "m2_1", text: "Complete all 18 modules on SQLBolt", link: "https://sqlbolt.com/" },
+                { id: "m2_2", text: "Work through Mode Analytics Intermediate SQL Tutorial", link: "https://mode.com/sql-tutorial/" },
+                { id: "m2_3", text: "Solve 15 LeetCode SQL Database Problems", link: "https://leetcode.com/problemset/database/" },
+                { id: "m2_4", text: "Complete free SQLBI: Introducing DAX Video Course", link: "https://www.sqlbi.com/p/introducing-dax/" },
+                { id: "m2_5", text: "Bookmark & Practice syntax on DAX.guide", link: "https://dax.guide" },
+                { id: "m2_6", text: "Practice Time-Intelligence functions (SAMEPERIODLASTYEAR, YTD)", link: "https://dax.guide" }
+            ],
+            m3: [
+                { id: "m3_1", text: "Acquire Datasets from Kaggle / Data.gov / Maven", link: "https://www.kaggle.com/datasets" },
+                { id: "m3_2", text: "Build Project 1: Public Works & Asset Maintenance Lifecycle", link: "#" },
+                { id: "m3_3", text: "Build Project 2: Enterprise Data Quality & Schema Audit Scorecard", link: "#" },
+                { id: "m3_4", text: "Build Project 3: Corporate Real Estate Space Utilization", link: "#" },
+                { id: "m3_5", text: "Execute Workplace 'Stealth Project' (Automate GS spreadsheet report)", link: "#" },
+                { id: "m3_6", text: "Publish Portfolio reports to NovyPro or GitHub", link: "https://www.novypro.com/" }
+            ],
+            m4: [
+                { id: "m4_1", text: "Review official Microsoft PL-300 Study Guide", link: "https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/pl-300" },
+                { id: "m4_2", text: "Complete official Microsoft PL-300 Free Practice Assessment", link: "https://learn.microsoft.com/en-us/credentials/certifications/exams/pl-300/practice/assessment" },
+                { id: "m4_3", text: "Submit IDP request to Army Supervisor for $165 voucher funding", link: "#" },
+                { id: "m4_4", text: "Schedule & Pass Microsoft PL-300 Exam (Certified Power BI Analyst)", link: "https://learn.microsoft.com/en-us/credentials/certifications/data-analyst-associate/" },
+                { id: "m4_5", text: "Deploy Retooled Resume highlighting Power BI, DAX, and SQL", link: "#" },
+                { id: "m4_6", text: "Apply to targeted 100% Remote BI & Data Governance roles", link: "#" }
+            ]
+        };
+
+        const STORAGE_KEY = "pivot_tracker_state_v2";
+        let appState = {
+            checkedTasks: {},
+            projects: { proj1: false, proj2: false, proj3: false, proj4: false },
+            applications: [
+                { id: 1, company: "Spring Health", role: "Operations Business Analyst", salary: "$106.5k - $118k", status: "Targeted" },
+                { id: 2, company: "LMI", role: "Data Governance Specialist", salary: "$85.9k - $145.1k", status: "Targeted" }
+            ]
+        };
+
+        let skillRadarChart = null;
+        let salaryBarChart = null;
+
+        window.onload = function() {
+            loadState();
+            renderChecklists();
+            updateUI();
+            initCharts();
+        };
+
+        function loadState() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    appState = JSON.parse(saved);
+                } catch(e) {
+                    console.error("Error loading state", e);
+                }
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+        }
+
+        function renderChecklists() {
+            ['m1', 'm2', 'm3', 'm4'].forEach(monthKey => {
+                const container = document.getElementById(`month-${monthKey.slice(1)}-items`);
+                if (!container) return;
+                
+                container.innerHTML = TASKS_DATA[monthKey].map(task => {
+                    const isChecked = !!appState.checkedTasks[task.id];
+                    return `
+                        <div class="flex items-center justify-between p-3 bg-slate-950/60 rounded-lg border border-slate-800/80 hover:border-slate-700 transition-all">
+                            <label class="flex items-center space-x-3 cursor-pointer flex-1 min-w-0 pr-2">
+                                <input type="checkbox" onchange="toggleTask('${task.id}')" ${isChecked ? 'checked' : ''} class="rounded border-slate-700 bg-slate-800 text-blue-500 focus:ring-blue-500 h-4 w-4 flex-shrink-0">
+                                <span class="text-xs text-slate-200 ${isChecked ? 'line-through text-slate-500' : ''} truncate">${task.text}</span>
+                            </label>
+                            ${task.link && task.link !== '#' ? `
+                                <a href="${task.link}" target="_blank" rel="noopener noreferrer" class="text-xs text-blue-400 hover:text-blue-300 flex items-center space-x-1 flex-shrink-0">
+                                    <span class="hidden sm:inline">Resource</span>
+                                    <i class="fa-solid fa-external-link text-[10px]"></i>
+                                </a>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
+            });
+
+            // Set portfolio checkboxes
+            if (document.getElementById('proj-1-check')) document.getElementById('proj-1-check').checked = !!appState.projects.proj1;
+            if (document.getElementById('proj-2-check')) document.getElementById('proj-2-check').checked = !!appState.projects.proj2;
+            if (document.getElementById('proj-3-check')) document.getElementById('proj-3-check').checked = !!appState.projects.proj3;
+            if (document.getElementById('proj-4-check')) document.getElementById('proj-4-check').checked = !!appState.projects.proj4;
+
+            renderApplications();
+        }
+
+        function toggleTask(taskId) {
+            appState.checkedTasks[taskId] = !appState.checkedTasks[taskId];
+            saveState();
+            renderChecklists();
+            updateUI();
+            updateCharts();
+        }
+
+        function toggleProject(projKey) {
+            appState.projects[projKey] = !appState.projects[projKey];
+            saveState();
+            updateUI();
+        }
+
+        function updateUI() {
+            let totalTasks = 0;
+            let completedTasks = 0;
+
+            const monthStats = { m1: { total: 0, done: 0 }, m2: { total: 0, done: 0 }, m3: { total: 0, done: 0 }, m4: { total: 0, done: 0 } };
+
+            ['m1', 'm2', 'm3', 'm4'].forEach(m => {
+                TASKS_DATA[m].forEach(t => {
+                    totalTasks++;
+                    monthStats[m].total++;
+                    if (appState.checkedTasks[t.id]) {
+                        completedTasks++;
+                        monthStats[m].done++;
+                    }
+                });
+            });
+
+            const overallPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+            // Header elements
+            document.getElementById('header-percent').innerText = `${overallPercent}%`;
+            document.getElementById('header-progress-bar').style.width = `${overallPercent}%`;
+
+            // Dashboard elements
+            document.getElementById('dash-percent').innerText = `${overallPercent}%`;
+            document.getElementById('dash-tasks-completed').innerText = completedTasks;
+            document.getElementById('dash-tasks-total').innerText = totalTasks;
+
+            // Monthly progress bars
+            ['m1', 'm2', 'm3', 'm4'].forEach(m => {
+                const pct = monthStats[m].total > 0 ? Math.round((monthStats[m].done / monthStats[m].total) * 100) : 0;
+                document.getElementById(`${m}-percent`).innerText = `${pct}%`;
+                document.getElementById(`${m}-bar`).style.width = `${pct}%`;
+                const badge = document.getElementById(`${m}-count-badge`);
+                if (badge) badge.innerText = `${monthStats[m].done}/${monthStats[m].total} Done`;
+            });
+
+            // Current Phase Text
+            if (overallPercent < 25) {
+                document.getElementById('dash-current-phase').innerText = "Month 1: BI Foundations";
+            } else if (overallPercent < 50) {
+                document.getElementById('dash-current-phase').innerText = "Month 2: DAX & SQL Practice";
+            } else if (overallPercent < 75) {
+                document.getElementById('dash-current-phase').innerText = "Month 3: Portfolio Projects";
+            } else {
+                document.getElementById('dash-current-phase').innerText = "Month 4: Exam & Applications";
+            }
+
+            // Portfolio Count
+            let builtProjects = 0;
+            Object.values(appState.projects).forEach(val => { if (val) builtProjects++; });
+            document.getElementById('dash-portfolio-count').innerText = `${builtProjects}/3`;
+        }
+
+        function initCharts() {
+            // Competency Radar Chart
+            const ctxRadar = document.getElementById('skillRadarChart').getContext('2d');
+            skillRadarChart = new Chart(ctxRadar, {
+                type: 'radar',
+                data: {
+                    labels: ['Spatial Logic', 'Python Scripting', 'DAX Measures', 'Data Modeling', 'SQL Queries', 'Data Quality / Governance'],
+                    datasets: [{
+                        label: 'Current GIS Baseline',
+                        data: [95, 80, 15, 60, 75, 90],
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: '#3b82f6',
+                        borderWidth: 2
+                    }, {
+                        label: 'Target BI Profile',
+                        data: [80, 90, 95, 95, 98, 95],
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        borderColor: '#10b981',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: '#334155' },
+                            grid: { color: '#1e293b' },
+                            pointLabels: { color: '#94a3b8', font: { size: 10 } },
+                            ticks: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#cbd5e1', font: { size: 11 } }, position: 'bottom' }
+                    }
+                }
+            });
+
+            // Salary Benchmark Bar Chart
+            const ctxBar = document.getElementById('salaryBarChart').getContext('2d');
+            salaryBarChart = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: ['GS-12 Step 6 Baseline', 'Remote BI Specialist', 'Senior Remote BI Analyst', 'Remote Data Governance'],
+                    datasets: [{
+                        data: [103792, 118000, 142000, 155000],
+                        backgroundColor: ['#64748b', '#3b82f6', '#10b981', '#f59e0b'],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: {
+                            grid: { color: '#1e293b' },
+                            ticks: { color: '#94a3b8', callback: value => '$' + (value/1000) + 'k' }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { color: '#cbd5e1' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCharts() {
+            if (skillRadarChart) skillRadarChart.update();
+            if (salaryBarChart) salaryBarChart.update();
+        }
+
+        function renderApplications() {
+            const tbody = document.getElementById('application-list-body');
+            if (!tbody) return;
+
+            if (appState.applications.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">No applications logged yet. Click "Log New Application" above.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = appState.applications.map(app => `
+                <tr class="hover:bg-slate-900/50">
+                    <td class="p-3 font-semibold text-white">${app.company}</td>
+                    <td class="p-3 text-slate-300">${app.role}</td>
+                    <td class="p-3 text-emerald-400 font-semibold">${app.salary}</td>
+                    <td class="p-3">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${app.status === 'Applied' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-slate-800 text-slate-400'}">${app.status}</span>
+                    </td>
+                    <td class="p-3 text-right">
+                        <button onclick="deleteApplication(${app.id})" class="text-slate-500 hover:text-red-400 transition-colors"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function addApplicationPrompt() {
+            const company = prompt("Company Name (e.g. Lockheed Martin):");
+            if (!company) return;
+            const role = prompt("Role Title (e.g. Senior BI Analyst):") || "BI Analyst";
+            const salary = prompt("Target Compensation (e.g. $125,000):") || "$120,000";
+
+            appState.applications.push({
+                id: Date.now(),
+                company,
+                role,
+                salary,
+                status: "Applied"
+            });
+            saveState();
+            renderApplications();
+        }
+
+        function deleteApplication(id) {
+            appState.applications = appState.applications.filter(a => a.id !== id);
+            saveState();
+            renderApplications();
+        }
+
+        function switchTab(tabId) {
+            ['dashboard', 'checklist', 'portfolio', 'jobs', 'resources'].forEach(t => {
+                const view = document.getElementById(`view-${t}`);
+                const btn = document.getElementById(`tab-btn-${t}`);
+                if (view) view.classList.add('hidden');
+                if (btn) btn.classList.remove('active');
+            });
+
+            const activeView = document.getElementById(`view-${tabId}`);
+            const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+            if (activeView) activeView.classList.remove('hidden');
+            if (activeBtn) activeBtn.classList.add('active');
+        }
+
+        function confirmReset() {
+            if (confirm("Are you sure you want to reset all checklist progress?")) {
+                appState.checkedTasks = {};
+                appState.projects = { proj1: false, proj2: false, proj3: false, proj4: false };
+                saveState();
+                renderChecklists();
+                updateUI();
+                updateCharts();
+            }
+        }
+    </script>
+</body>
+</html>
