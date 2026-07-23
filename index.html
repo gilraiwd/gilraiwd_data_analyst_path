@@ -26,6 +26,14 @@
             color: #ffffff;
             box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
         }
+        @media print {
+            body { background: #ffffff !important; color: #000000 !important; }
+            aside, header, .no-print, a[href]::after { display: none !important; }
+            main, section { display: block !important; color: #000000 !important; }
+            .bg-slate-900, .bg-slate-950, .bg-slate-950\/60 { background: #ffffff !important; border: 1px solid #ccc !important; }
+            .text-white, .text-slate-200, .text-slate-300 { color: #000000 !important; }
+            .text-slate-400, .text-slate-500 { color: #333333 !important; }
+        }
     </style>
 </head>
 <body class="h-full text-slate-100 flex flex-col bg-slate-950 antialiased selection:bg-blue-500 selection:text-white">
@@ -41,8 +49,16 @@
                     </div>
                     <div>
                         <h1 class="text-lg font-bold text-white tracking-tight">Pivot Tracker</h1>
-                        <p class="text-xs text-slate-400">GS-12 GIS → 100% Remote BI Analyst</p>
+                        <p class="text-xs text-slate-400" id="header-subtitle">GIS Analyst → 100% Remote BI Analyst</p>
                     </div>
+                </div>
+
+                <!-- Settings Button -->
+                <div class="no-print">
+                    <button onclick="openSettings()" title="Enter your current role, salary, and targets (saved only in this browser)" class="text-xs text-slate-400 hover:text-slate-200 transition-colors flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-slate-800 hover:border-slate-600">
+                        <i class="fa-solid fa-gear"></i>
+                        <span class="hidden sm:inline">My Info</span>
+                    </button>
                 </div>
 
                 <!-- Global Progress Pill -->
@@ -56,14 +72,86 @@
                     </div>
                 </div>
 
-                <!-- Reset Data Button -->
-                <button onclick="confirmReset()" class="text-xs text-slate-400 hover:text-red-400 transition-colors flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-slate-800 hover:border-red-900/50">
-                    <i class="fa-solid fa-arrow-rotate-left"></i>
-                    <span class="hidden sm:inline">Reset Progress</span>
-                </button>
+                <!-- Last Saved Indicator (hidden on print) -->
+                <div class="hidden lg:block no-print">
+                    <span id="last-updated-label" class="text-xs text-slate-500 italic">No changes saved yet</span>
+                </div>
+
+                <!-- Backup / Reset Buttons -->
+                <div class="flex items-center space-x-2 no-print">
+                    <button onclick="printChecklist()" title="Print or save a PDF of your checklist" class="text-xs text-slate-400 hover:text-slate-200 transition-colors flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-slate-800 hover:border-slate-600">
+                        <i class="fa-solid fa-print"></i>
+                        <span class="hidden sm:inline">Print</span>
+                    </button>
+                    <button onclick="exportState()" title="Download your progress as a backup file" class="text-xs text-slate-400 hover:text-blue-400 transition-colors flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-slate-800 hover:border-blue-900/50">
+                        <i class="fa-solid fa-download"></i>
+                        <span class="hidden sm:inline">Export</span>
+                    </button>
+                    <button onclick="importState()" title="Restore progress from a backup file" class="text-xs text-slate-400 hover:text-emerald-400 transition-colors flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-slate-800 hover:border-emerald-900/50">
+                        <i class="fa-solid fa-upload"></i>
+                        <span class="hidden sm:inline">Import</span>
+                    </button>
+                    <button onclick="confirmReset()" class="text-xs text-slate-400 hover:text-red-400 transition-colors flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-slate-800 hover:border-red-900/50">
+                        <i class="fa-solid fa-arrow-rotate-left"></i>
+                        <span class="hidden sm:inline">Reset</span>
+                    </button>
+                </div>
             </div>
         </div>
     </header>
+
+    <!-- Settings Modal (data entered here is stored ONLY in this browser's localStorage) -->
+    <div id="settings-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 no-print">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-md space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold text-white">Your Info</h3>
+                <button onclick="closeSettings()" class="text-slate-500 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="text-xs text-slate-400 leading-relaxed">
+                This stays in your browser's local storage only — it is never written into the site's code or uploaded anywhere.
+                It's why the checklist app itself can stay generic even though your dashboard shows your real numbers.
+            </p>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs font-semibold text-slate-300 block mb-1">Current Job Title</label>
+                    <input id="settings-title" type="text" placeholder="e.g. GIS Analyst" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-slate-300 block mb-1">Current Annual Salary ($)</label>
+                    <input id="settings-current-salary" type="number" placeholder="e.g. 104000" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs font-semibold text-slate-300 block mb-1">Target Min ($)</label>
+                        <input id="settings-target-min" type="number" placeholder="e.g. 118000" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-300 block mb-1">Target Max ($)</label>
+                        <input id="settings-target-max" type="number" placeholder="e.g. 155000" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-slate-300 block mb-1">Target Role Title</label>
+                    <input id="settings-target-title" type="text" placeholder="e.g. 100% Remote BI Analyst" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs font-semibold text-slate-300 block mb-1">Plan Start Date</label>
+                        <input id="settings-start-date" type="date" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-300 block mb-1">PL-300 Exam Date</label>
+                        <input id="settings-exam-date" type="date" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center justify-between pt-2">
+                <button onclick="clearSettings()" class="text-xs text-red-400 hover:text-red-300">Clear this info</button>
+                <button onclick="saveSettings()" class="bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold px-4 py-2 rounded-lg">Save</button>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Main Workspace Layout -->
     <div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row gap-6">
@@ -102,7 +190,7 @@
                     <div class="relative z-10">
                         <div class="inline-flex items-center space-x-2 bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs px-3 py-1 rounded-full font-medium mb-3">
                             <i class="fa-solid fa-bullseye"></i>
-                            <span>Target: 100% Remote Senior BI Analyst ($125k–$155k)</span>
+                            <span id="banner-target-text">Target: 100% Remote Senior BI Analyst</span>
                         </div>
                         <h2 class="text-2xl font-bold text-white mb-2">GIS to Power BI Pivot Blueprint</h2>
                         <p class="text-sm text-slate-400 max-w-2xl leading-relaxed">
@@ -136,7 +224,7 @@
                             <span class="text-xs font-semibold uppercase tracking-wider">Portfolio Status</span>
                             <i class="fa-solid fa-layer-group text-amber-400"></i>
                         </div>
-                        <div class="text-3xl font-extrabold text-white" id="dash-portfolio-count">0/3</div>
+                        <div class="text-3xl font-extrabold text-white" id="dash-portfolio-count">0/4</div>
                         <p class="text-xs text-slate-500 mt-1">Projects Built & Hosted</p>
                     </div>
 
@@ -145,8 +233,38 @@
                             <span class="text-xs font-semibold uppercase tracking-wider">Target Salary Jump</span>
                             <i class="fa-solid fa-arrow-trend-up text-purple-400"></i>
                         </div>
-                        <div class="text-2xl font-bold text-emerald-400">+$20k - $50k</div>
-                        <p class="text-xs text-slate-500 mt-1">Above GS-12 Step 6 Baseline</p>
+                        <div class="text-2xl font-bold text-emerald-400" id="dash-salary-jump">+$20k - $50k</div>
+                        <p class="text-xs text-slate-500 mt-1">Above Current Role Baseline</p>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5" id="pace-card">
+                        <div class="flex items-center justify-between text-slate-400 mb-2">
+                            <span class="text-xs font-semibold uppercase tracking-wider">Pace</span>
+                            <i class="fa-solid fa-gauge-high text-blue-400"></i>
+                        </div>
+                        <div class="text-lg font-bold text-white" id="dash-pace-status">Set a start date</div>
+                        <p class="text-xs text-slate-500 mt-1" id="dash-pace-detail">Add one in "My Info" to track pacing</p>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5" id="countdown-card">
+                        <div class="flex items-center justify-between text-slate-400 mb-2">
+                            <span class="text-xs font-semibold uppercase tracking-wider">PL-300 Exam</span>
+                            <i class="fa-solid fa-hourglass-half text-amber-400"></i>
+                        </div>
+                        <div class="text-lg font-bold text-white" id="dash-exam-countdown">No date set</div>
+                        <p class="text-xs text-slate-500 mt-1" id="dash-exam-detail">Add a target date in "My Info"</p>
+                    </div>
+                </div>
+
+                <!-- Backup Nudge Banner (dismissible, only shows when relevant) -->
+                <div id="backup-nudge" class="hidden bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex items-center justify-between gap-3">
+                    <p class="text-xs text-amber-300 flex items-center space-x-2">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span id="backup-nudge-text">It's been a while since you exported a backup.</span>
+                    </p>
+                    <div class="flex items-center space-x-2 flex-shrink-0">
+                        <button onclick="exportState()" class="text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 px-3 py-1.5 rounded-lg">Export Now</button>
+                        <button onclick="dismissBackupNudge()" class="text-xs text-amber-300/70 hover:text-amber-200 px-2">Dismiss</button>
                     </div>
                 </div>
 
@@ -215,7 +333,7 @@
 
                     <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
                         <h3 class="text-base font-bold text-white mb-2">Salary Benchmark Comparison</h3>
-                        <p class="text-xs text-slate-400 mb-4">Comparing current GS-12 Step 6 baseline against target remote roles.</p>
+                        <p class="text-xs text-slate-400 mb-4">Comparing current role baseline against target remote roles.</p>
                         <div class="relative h-64 w-full">
                             <canvas id="salaryBarChart"></canvas>
                         </div>
@@ -421,22 +539,48 @@
                     <p class="text-sm text-slate-400">Active market postings matching your retooled profile, plus an application logger.</p>
                 </div>
 
-                <!-- Active Sample Job Cards -->
+                <!-- Live Job Search (manual, click to run, skills-based) -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+                    <div>
+                        <h3 class="text-sm font-bold text-white flex items-center space-x-2">
+                            <i class="fa-solid fa-satellite-dish text-blue-400"></i>
+                            <span>Live Job Search</span>
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-1">
+                            Searches by skills, not specific companies. Pulls current listings from a public job board API when you click — nothing runs automatically or in the background.
+                        </p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <input id="search-keywords" type="text" value="power bi, dax, sql, business intelligence, data analyst, data governance"
+                            class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            placeholder="Comma-separated skills or titles, e.g. power bi, sql, data analyst">
+                        <button onclick="searchLiveJobs()" id="live-search-btn" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors flex items-center justify-center space-x-2 whitespace-nowrap">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <span>Search Now</span>
+                        </button>
+                    </div>
+                    <p id="live-search-status" class="text-xs text-slate-500"></p>
+                    <div id="live-search-results" class="space-y-2"></div>
+                    <a id="indeed-fallback-link" href="#" target="_blank" rel="noopener noreferrer" class="hidden text-xs text-blue-400 hover:underline items-center space-x-1.5">
+                        <span>Also open a broader search on Indeed for these terms</span>
+                        <i class="fa-solid fa-external-link text-[10px]"></i>
+                    </a>
+                </div>
+
+                <!-- Role Archetype Cards (skill-based, not tied to specific employers) -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
                         <div class="flex justify-between items-start">
                             <div>
-                                <span class="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">100% Remote</span>
-                                <h3 class="text-base font-bold text-white mt-1">Operations Business Analyst</h3>
-                                <p class="text-xs text-slate-400">Spring Health</p>
+                                <span class="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Common Remote Archetype</span>
+                                <h3 class="text-base font-bold text-white mt-1">Operations / Business Analyst</h3>
                             </div>
-                            <span class="text-sm font-extrabold text-emerald-400">$106.5k – $118k</span>
                         </div>
                         <p class="text-xs text-slate-400 leading-relaxed">
-                            Focuses on SQL queries, Power BI / Looker reporting, and partnering with operations leadership to translate data into decision metrics.
+                            SQL queries, Power BI reporting, and partnering with operational leadership to turn raw data into decision metrics. Common at healthcare, logistics, and SaaS companies.
                         </p>
-                        <a href="https://job-boards.greenhouse.io/springhealth66/jobs/4710036005" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 text-xs text-blue-400 hover:underline">
-                            <span>View Posting on Greenhouse</span>
+                        <a href="https://www.indeed.com/jobs?q=operations+business+analyst+power+bi+sql&l=Remote" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 text-xs text-blue-400 hover:underline">
+                            <span>Search Live Listings on Indeed</span>
                             <i class="fa-solid fa-external-link text-[10px]"></i>
                         </a>
                     </div>
@@ -444,17 +588,15 @@
                     <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
                         <div class="flex justify-between items-start">
                             <div>
-                                <span class="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Remote / Defense</span>
+                                <span class="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Common Remote Archetype</span>
                                 <h3 class="text-base font-bold text-white mt-1">Data Governance Specialist</h3>
-                                <p class="text-xs text-slate-400">LMI Consulting</p>
                             </div>
-                            <span class="text-sm font-extrabold text-emerald-400">$85.9k – $145.1k</span>
                         </div>
                         <p class="text-xs text-slate-400 leading-relaxed">
-                            Supports federal & defense data cataloging, metadata policies, QA/QC audits, and database schema compliance.
+                            Data cataloging, metadata policies, QA/QC audits, and schema compliance. Common at federal/defense contractors and larger enterprises with formal data programs.
                         </p>
-                        <a href="https://www.indeed.com/q-data-governance-l-remote-jobs.html" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 text-xs text-blue-400 hover:underline">
-                            <span>Search Listings on Indeed</span>
+                        <a href="https://www.indeed.com/jobs?q=data+governance+specialist&l=Remote" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 text-xs text-blue-400 hover:underline">
+                            <span>Search Live Listings on Indeed</span>
                             <i class="fa-solid fa-external-link text-[10px]"></i>
                         </a>
                     </div>
@@ -462,17 +604,15 @@
                     <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
                         <div class="flex justify-between items-start">
                             <div>
-                                <span class="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">100% Remote</span>
-                                <h3 class="text-base font-bold text-white mt-1">Senior Power BI & BI Data Analyst</h3>
-                                <p class="text-xs text-slate-400">Sentara Health</p>
+                                <span class="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Common Remote Archetype</span>
+                                <h3 class="text-base font-bold text-white mt-1">Senior Power BI / BI Analyst</h3>
                             </div>
-                            <span class="text-sm font-extrabold text-emerald-400">$80.2k – $133.6k</span>
                         </div>
                         <p class="text-xs text-slate-400 leading-relaxed">
-                            Requires SQL, DAX, and Power BI modeling to create operational executive dashboards in a stable health-tech sector.
+                            SQL, DAX, and Power BI modeling to build operational executive dashboards. A core fit for the exact skillset this plan builds.
                         </p>
-                        <a href="https://www.indeed.com/q-power-bi-l-remote-jobs.html" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 text-xs text-blue-400 hover:underline">
-                            <span>Search Listings on Indeed</span>
+                        <a href="https://www.indeed.com/jobs?q=senior+power+bi+analyst+dax&l=Remote" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 text-xs text-blue-400 hover:underline">
+                            <span>Search Live Listings on Indeed</span>
                             <i class="fa-solid fa-external-link text-[10px]"></i>
                         </a>
                     </div>
@@ -480,17 +620,15 @@
                     <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
                         <div class="flex justify-between items-start">
                             <div>
-                                <span class="text-xs font-semibold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">Telework / Level 4</span>
-                                <h3 class="text-base font-bold text-white mt-1">ERP Business Analyst Staff / BI</h3>
-                                <p class="text-xs text-slate-400">Lockheed Martin</p>
+                                <span class="text-xs font-semibold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">Common Remote/Telework Archetype</span>
+                                <h3 class="text-base font-bold text-white mt-1">ERP / Enterprise BI Analyst</h3>
                             </div>
-                            <span class="text-sm font-extrabold text-emerald-400">$114.7k – $198.7k</span>
                         </div>
                         <p class="text-xs text-slate-400 leading-relaxed">
-                            High-end role leveraging defense contractor background for material financial management and enterprise business intelligence.
+                            Relational database queries, workflow automation, and multi-departmental reporting. Common at large government contractors — a natural fit given your defense/federal background.
                         </p>
-                        <a href="https://www.indeed.com/q-power-bi-l-remote-jobs.html" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 text-xs text-blue-400 hover:underline">
-                            <span>Search Listings on Indeed</span>
+                        <a href="https://www.indeed.com/jobs?q=enterprise+business+intelligence+analyst&l=Remote" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 text-xs text-blue-400 hover:underline">
+                            <span>Search Live Listings on Indeed</span>
                             <i class="fa-solid fa-external-link text-[10px]"></i>
                         </a>
                     </div>
@@ -661,13 +799,20 @@
         };
 
         const STORAGE_KEY = "pivot_tracker_state_v2";
+        const DEFAULT_SETTINGS = {
+            currentTitle: "GIS Analyst",
+            currentSalary: 104000,
+            targetMin: 118000,
+            targetMax: 155000,
+            targetTitle: "100% Remote BI Analyst",
+            startDate: "",
+            examDate: ""
+        };
         let appState = {
             checkedTasks: {},
             projects: { proj1: false, proj2: false, proj3: false, proj4: false },
-            applications: [
-                { id: 1, company: "Spring Health", role: "Operations Business Analyst", salary: "$106.5k - $118k", status: "Targeted" },
-                { id: 2, company: "LMI", role: "Data Governance Specialist", salary: "$85.9k - $145.1k", status: "Targeted" }
-            ]
+            applications: [],
+            settings: { ...DEFAULT_SETTINGS }
         };
 
         let skillRadarChart = null;
@@ -678,21 +823,192 @@
             renderChecklists();
             updateUI();
             initCharts();
+            renderLastUpdated();
+            renderSettings();
+            renderPaceAndCountdown();
+            checkBackupNudge();
         };
 
         function loadState() {
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
                 try {
-                    appState = JSON.parse(saved);
+                    const parsed = JSON.parse(saved);
+                    // Merge onto defaults so new fields added later (e.g. a 5th project,
+                    // a new tab's state) don't get wiped out by an older saved blob.
+                    appState = {
+                        ...appState,
+                        ...parsed,
+                        checkedTasks: { ...appState.checkedTasks, ...(parsed.checkedTasks || {}) },
+                        projects: { ...appState.projects, ...(parsed.projects || {}) },
+                        applications: parsed.applications || appState.applications,
+                        settings: { ...DEFAULT_SETTINGS, ...(parsed.settings || {}) }
+                    };
                 } catch(e) {
                     console.error("Error loading state", e);
                 }
             }
         }
 
+        function exportState() {
+            appState.lastExportAt = new Date().toISOString();
+            saveState();
+            const blob = new Blob([JSON.stringify(appState, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "pivot-tracker-backup.json";
+            a.click();
+            URL.revokeObjectURL(url);
+            checkBackupNudge();
+        }
+
+        let nudgeDismissedThisSession = false;
+
+        function checkBackupNudge() {
+            const banner = document.getElementById('backup-nudge');
+            const textEl = document.getElementById('backup-nudge-text');
+            if (!banner) return;
+            if (nudgeDismissedThisSession) { banner.classList.add('hidden'); return; }
+
+            const hasProgress = Object.values(appState.checkedTasks).some(Boolean) || appState.applications.length > 0;
+            if (!hasProgress) { banner.classList.add('hidden'); return; }
+
+            const now = Date.now();
+            const lastExport = appState.lastExportAt ? new Date(appState.lastExportAt).getTime() : null;
+
+            if (lastExport === null) {
+                textEl.innerText = "You've made progress but haven't exported a backup yet.";
+                banner.classList.remove('hidden');
+                return;
+            }
+
+            const daysSinceExport = Math.floor((now - lastExport) / 86400000);
+            if (daysSinceExport >= 14) {
+                textEl.innerText = `It's been ${daysSinceExport} days since your last backup export.`;
+                banner.classList.remove('hidden');
+            } else {
+                banner.classList.add('hidden');
+            }
+        }
+
+        function dismissBackupNudge() {
+            nudgeDismissedThisSession = true;
+            document.getElementById('backup-nudge').classList.add('hidden');
+        }
+
+        function renderPaceAndCountdown() {
+            const s = appState.settings || DEFAULT_SETTINGS;
+            const paceStatusEl = document.getElementById('dash-pace-status');
+            const paceDetailEl = document.getElementById('dash-pace-detail');
+            const examEl = document.getElementById('dash-exam-countdown');
+            const examDetailEl = document.getElementById('dash-exam-detail');
+            if (!paceStatusEl || !examEl) return;
+
+            // Pace vs a 4-month (~122 day) plan
+            if (!s.startDate) {
+                paceStatusEl.innerText = 'Set a start date';
+                paceStatusEl.className = 'text-lg font-bold text-white';
+                paceDetailEl.innerText = 'Add one in "My Info" to track pacing';
+            } else {
+                const start = new Date(s.startDate);
+                const now = new Date();
+                const planDays = 122;
+                const elapsedDays = Math.max(0, Math.floor((now - start) / 86400000));
+                const expectedPct = Math.min(100, Math.round((elapsedDays / planDays) * 100));
+
+                let total = 0, done = 0;
+                ['m1', 'm2', 'm3', 'm4'].forEach(m => TASKS_DATA[m].forEach(t => {
+                    total++;
+                    if (appState.checkedTasks[t.id]) done++;
+                }));
+                const actualPct = total > 0 ? Math.round((done / total) * 100) : 0;
+                const diff = actualPct - expectedPct;
+
+                if (elapsedDays > planDays && actualPct < 100) {
+                    paceStatusEl.innerText = 'Past 4-Month Target';
+                    paceStatusEl.className = 'text-lg font-bold text-amber-400';
+                } else if (diff >= -5) {
+                    paceStatusEl.innerText = 'On Pace';
+                    paceStatusEl.className = 'text-lg font-bold text-emerald-400';
+                } else {
+                    paceStatusEl.innerText = 'Behind Schedule';
+                    paceStatusEl.className = 'text-lg font-bold text-amber-400';
+                }
+                paceDetailEl.innerText = `${actualPct}% done vs ${expectedPct}% expected`;
+            }
+
+            // PL-300 exam countdown
+            if (!s.examDate) {
+                examEl.innerText = 'No date set';
+                examDetailEl.innerText = 'Add a target date in "My Info"';
+            } else {
+                const exam = new Date(s.examDate);
+                const now = new Date();
+                const daysLeft = Math.ceil((exam - now) / 86400000);
+                if (daysLeft < 0) {
+                    examEl.innerText = 'Date passed';
+                    examDetailEl.innerText = 'Update your exam date in "My Info"';
+                } else if (daysLeft === 0) {
+                    examEl.innerText = 'Today!';
+                    examDetailEl.innerText = 'Good luck out there';
+                } else {
+                    examEl.innerText = `${daysLeft} day${daysLeft === 1 ? '' : 's'}`;
+                    examDetailEl.innerText = `Until ${exam.toLocaleDateString()}`;
+                }
+            }
+        }
+
+        function importState() {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = "application/json";
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    try {
+                        const parsed = JSON.parse(evt.target.result);
+                        appState = {
+                            checkedTasks: parsed.checkedTasks || {},
+                            projects: { proj1: false, proj2: false, proj3: false, proj4: false, ...(parsed.projects || {}) },
+                            applications: parsed.applications || [],
+                            settings: { ...DEFAULT_SETTINGS, ...(parsed.settings || {}) },
+                            lastExportAt: parsed.lastExportAt || null
+                        };
+                        saveState();
+                        renderChecklists();
+                        updateUI();
+                        updateCharts();
+                        renderSettings();
+                        renderPaceAndCountdown();
+                        checkBackupNudge();
+                        alert("Progress imported successfully.");
+                    } catch (err) {
+                        alert("That file couldn't be read as a valid backup.");
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
         function saveState() {
+            appState.lastUpdated = new Date().toISOString();
             localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+            renderLastUpdated();
+        }
+
+        function renderLastUpdated() {
+            const el = document.getElementById('last-updated-label');
+            if (!el) return;
+            if (!appState.lastUpdated) {
+                el.innerText = 'No changes saved yet';
+                return;
+            }
+            const d = new Date(appState.lastUpdated);
+            el.innerText = `Last saved ${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}`;
         }
 
         function renderChecklists() {
@@ -734,12 +1050,16 @@
             renderChecklists();
             updateUI();
             updateCharts();
+            renderPaceAndCountdown();
+            checkBackupNudge();
         }
 
         function toggleProject(projKey) {
             appState.projects[projKey] = !appState.projects[projKey];
             saveState();
             updateUI();
+            updateCharts();
+            checkBackupNudge();
         }
 
         function updateUI() {
@@ -793,27 +1113,60 @@
             // Portfolio Count
             let builtProjects = 0;
             Object.values(appState.projects).forEach(val => { if (val) builtProjects++; });
-            document.getElementById('dash-portfolio-count').innerText = `${builtProjects}/3`;
+            document.getElementById('dash-portfolio-count').innerText = `${builtProjects}/4`;
+        }
+
+        // Maps radar skill labels to the specific checklist/project items that build that skill.
+        // Skills with no mapped tasks (Spatial Logic, Python Scripting) are things you already
+        // have from GIS work, so they stay flat at baseline rather than "growing."
+        const SKILL_TASK_MAP = {
+            'DAX Measures': ['m2_4', 'm2_5', 'm2_6'],
+            'Data Modeling': ['m1_2', 'm1_3'],
+            'SQL Queries': ['m2_1', 'm2_2', 'm2_3'],
+            'Data Quality / Governance': ['m3_3', 'proj2']
+        };
+
+        function computeCurrentSkills(labels, baselineData, targetData) {
+            return labels.map((label, i) => {
+                const taskIds = SKILL_TASK_MAP[label];
+                if (!taskIds) return baselineData[i];
+                const doneCount = taskIds.reduce((count, id) => {
+                    const isDone = id.startsWith('proj') ? !!appState.projects[id] : !!appState.checkedTasks[id];
+                    return count + (isDone ? 1 : 0);
+                }, 0);
+                const fraction = doneCount / taskIds.length;
+                return Math.round(baselineData[i] + (targetData[i] - baselineData[i]) * fraction);
+            });
         }
 
         function initCharts() {
             // Competency Radar Chart
             const ctxRadar = document.getElementById('skillRadarChart').getContext('2d');
+            const radarLabels = ['Spatial Logic', 'Python Scripting', 'DAX Measures', 'Data Modeling', 'SQL Queries', 'Data Quality / Governance'];
+            const radarBaseline = [95, 80, 15, 60, 75, 90];
+            const radarTarget = [80, 90, 95, 95, 98, 95];
             skillRadarChart = new Chart(ctxRadar, {
                 type: 'radar',
                 data: {
-                    labels: ['Spatial Logic', 'Python Scripting', 'DAX Measures', 'Data Modeling', 'SQL Queries', 'Data Quality / Governance'],
+                    labels: radarLabels,
                     datasets: [{
                         label: 'Current GIS Baseline',
-                        data: [95, 80, 15, 60, 75, 90],
-                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        data: radarBaseline,
+                        backgroundColor: 'rgba(59, 130, 246, 0.15)',
                         borderColor: '#3b82f6',
-                        borderWidth: 2
+                        borderWidth: 1
                     }, {
                         label: 'Target BI Profile',
-                        data: [80, 90, 95, 95, 98, 95],
-                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        data: radarTarget,
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
                         borderColor: '#10b981',
+                        borderWidth: 1,
+                        borderDash: [4, 4]
+                    }, {
+                        label: 'Your Current Progress',
+                        data: computeCurrentSkills(radarLabels, radarBaseline, radarTarget),
+                        backgroundColor: 'rgba(245, 158, 11, 0.25)',
+                        borderColor: '#f59e0b',
                         borderWidth: 2
                     }]
                 },
@@ -834,14 +1187,15 @@
                 }
             });
 
-            // Salary Benchmark Bar Chart
+            // Salary Benchmark Bar Chart (built from user-entered settings, not hardcoded)
             const ctxBar = document.getElementById('salaryBarChart').getContext('2d');
+            const sBar = appState.settings || DEFAULT_SETTINGS;
             salaryBarChart = new Chart(ctxBar, {
                 type: 'bar',
                 data: {
-                    labels: ['GS-12 Step 6 Baseline', 'Remote BI Specialist', 'Senior Remote BI Analyst', 'Remote Data Governance'],
+                    labels: [sBar.currentTitle, 'Target Min', 'Target Mid', 'Target Max'],
                     datasets: [{
-                        data: [103792, 118000, 142000, 155000],
+                        data: [sBar.currentSalary, sBar.targetMin, Math.round((sBar.targetMin + sBar.targetMax) / 2), sBar.targetMax],
                         backgroundColor: ['#64748b', '#3b82f6', '#10b981', '#f59e0b'],
                         borderRadius: 6
                     }]
@@ -866,9 +1220,107 @@
         }
 
         function updateCharts() {
-            if (skillRadarChart) skillRadarChart.update();
-            if (salaryBarChart) salaryBarChart.update();
+            if (salaryBarChart) {
+                const s = appState.settings || DEFAULT_SETTINGS;
+                salaryBarChart.data.labels = [s.currentTitle, 'Target Min', 'Target Mid', 'Target Max'];
+                salaryBarChart.data.datasets[0].data = [s.currentSalary, s.targetMin, Math.round((s.targetMin + s.targetMax) / 2), s.targetMax];
+                salaryBarChart.update();
+            }
+            if (skillRadarChart) {
+                const labels = skillRadarChart.data.labels;
+                const baseline = skillRadarChart.data.datasets[0].data;
+                const target = skillRadarChart.data.datasets[1].data;
+                skillRadarChart.data.datasets[2].data = computeCurrentSkills(labels, baseline, target);
+                skillRadarChart.update();
+            }
         }
+
+        async function searchLiveJobs() {
+            const btn = document.getElementById('live-search-btn');
+            const statusEl = document.getElementById('live-search-status');
+            const resultsEl = document.getElementById('live-search-results');
+            const indeedLink = document.getElementById('indeed-fallback-link');
+
+            const rawInput = document.getElementById('search-keywords').value.trim();
+            const keywords = rawInput.split(',').map(k => k.trim().toLowerCase()).filter(Boolean);
+            if (keywords.length === 0) {
+                statusEl.innerText = 'Enter at least one skill or job title to search for.';
+                return;
+            }
+
+            // Always give a working Indeed link for these exact terms, since Indeed
+            // has no public API a static page can call directly.
+            const indeedQuery = encodeURIComponent(keywords.join(' '));
+            indeedLink.href = `https://www.indeed.com/jobs?q=${indeedQuery}&l=Remote`;
+            indeedLink.classList.remove('hidden');
+            indeedLink.classList.add('flex');
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Searching...</span>`;
+            statusEl.innerText = '';
+            resultsEl.innerHTML = '';
+
+            const matches = (title, tags) => {
+                const haystack = (title + ' ' + (tags || []).join(' ')).toLowerCase();
+                return keywords.some(k => haystack.includes(k));
+            };
+
+            let results = [];
+            let sourceErrors = 0;
+
+            // Source 1: Arbeitnow — free, public, no key, built for direct browser use
+            try {
+                const res = await fetch('https://www.arbeitnow.com/api/job-board-api');
+                if (!res.ok) throw new Error(`Arbeitnow returned ${res.status}`);
+                const data = await res.json();
+                const jobs = (data.data || [])
+                    .filter(j => matches(j.title, j.tags))
+                    .map(j => ({
+                        title: j.title,
+                        company: j.company_name,
+                        location: j.remote ? 'Remote' : (j.location || 'Location not listed'),
+                        url: j.url,
+                        source: 'Arbeitnow'
+                    }));
+                results = results.concat(jobs);
+            } catch (err) {
+                sourceErrors++;
+                console.error('Arbeitnow fetch failed', err);
+            }
+
+            resultsEl.innerHTML = '';
+            if (results.length === 0) {
+                resultsEl.innerHTML = sourceErrors > 0
+                    ? `<p class="text-xs text-slate-500 p-3">Couldn't reach the job board API right now — use the Indeed link below instead.</p>`
+                    : `<p class="text-xs text-slate-500 p-3">No matching listings right now for those terms. Try broader keywords, or use the Indeed link below.</p>`;
+            } else {
+                resultsEl.innerHTML = results.slice(0, 10).map(j => `
+                    <a href="${j.url}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between bg-slate-950/60 border border-slate-800 rounded-lg p-3 hover:border-blue-700 transition-colors">
+                        <div>
+                            <p class="text-sm text-white font-semibold">${j.title}</p>
+                            <p class="text-xs text-slate-500">${j.company} · ${j.location}</p>
+                        </div>
+                        <i class="fa-solid fa-external-link text-slate-500 text-xs"></i>
+                    </a>
+                `).join('');
+            }
+
+            const now = new Date();
+            statusEl.innerText = `Found ${results.length} matching listing${results.length === 1 ? '' : 's'} · searched ${now.toLocaleDateString()} ${now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
+
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i><span>Search Now</span>`;
+        }
+
+        const APPLICATION_STAGES = ['Targeted', 'Applied', 'Screening', 'Interview', 'Offer', 'Rejected'];
+        const STAGE_COLORS = {
+            Targeted: 'bg-slate-800 text-slate-400 border-slate-700',
+            Applied: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+            Screening: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+            Interview: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+            Offer: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+            Rejected: 'bg-red-500/10 text-red-400 border-red-500/20'
+        };
 
         function renderApplications() {
             const tbody = document.getElementById('application-list-body');
@@ -885,7 +1337,9 @@
                     <td class="p-3 text-slate-300">${app.role}</td>
                     <td class="p-3 text-emerald-400 font-semibold">${app.salary}</td>
                     <td class="p-3">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${app.status === 'Applied' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-slate-800 text-slate-400'}">${app.status}</span>
+                        <select onchange="updateApplicationStatus(${app.id}, this.value)" class="text-[10px] font-bold rounded px-2 py-1 border ${STAGE_COLORS[app.status] || STAGE_COLORS.Targeted} bg-slate-950">
+                            ${APPLICATION_STAGES.map(stage => `<option value="${stage}" ${app.status === stage ? 'selected' : ''}>${stage}</option>`).join('')}
+                        </select>
                     </td>
                     <td class="p-3 text-right">
                         <button onclick="deleteApplication(${app.id})" class="text-slate-500 hover:text-red-400 transition-colors"><i class="fa-solid fa-trash"></i></button>
@@ -894,8 +1348,16 @@
             `).join('');
         }
 
+        function updateApplicationStatus(id, newStatus) {
+            const app = appState.applications.find(a => a.id === id);
+            if (!app) return;
+            app.status = newStatus;
+            saveState();
+            renderApplications();
+        }
+
         function addApplicationPrompt() {
-            const company = prompt("Company Name (e.g. Lockheed Martin):");
+            const company = prompt("Company Name:");
             if (!company) return;
             const role = prompt("Role Title (e.g. Senior BI Analyst):") || "BI Analyst";
             const salary = prompt("Target Compensation (e.g. $125,000):") || "$120,000";
@@ -905,10 +1367,11 @@
                 company,
                 role,
                 salary,
-                status: "Applied"
+                status: "Targeted"
             });
             saveState();
             renderApplications();
+            checkBackupNudge();
         }
 
         function deleteApplication(id) {
@@ -931,14 +1394,81 @@
             if (activeBtn) activeBtn.classList.add('active');
         }
 
+        function openSettings() {
+            const s = appState.settings || DEFAULT_SETTINGS;
+            document.getElementById('settings-title').value = s.currentTitle || '';
+            document.getElementById('settings-current-salary').value = s.currentSalary || '';
+            document.getElementById('settings-target-min').value = s.targetMin || '';
+            document.getElementById('settings-target-max').value = s.targetMax || '';
+            document.getElementById('settings-target-title').value = s.targetTitle || '';
+            document.getElementById('settings-start-date').value = s.startDate || '';
+            document.getElementById('settings-exam-date').value = s.examDate || '';
+            document.getElementById('settings-modal').classList.remove('hidden');
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
+        function saveSettings() {
+            appState.settings = {
+                currentTitle: document.getElementById('settings-title').value.trim() || DEFAULT_SETTINGS.currentTitle,
+                currentSalary: parseInt(document.getElementById('settings-current-salary').value) || DEFAULT_SETTINGS.currentSalary,
+                targetMin: parseInt(document.getElementById('settings-target-min').value) || DEFAULT_SETTINGS.targetMin,
+                targetMax: parseInt(document.getElementById('settings-target-max').value) || DEFAULT_SETTINGS.targetMax,
+                targetTitle: document.getElementById('settings-target-title').value.trim() || DEFAULT_SETTINGS.targetTitle,
+                startDate: document.getElementById('settings-start-date').value || "",
+                examDate: document.getElementById('settings-exam-date').value || ""
+            };
+            saveState();
+            renderSettings();
+            renderPaceAndCountdown();
+            updateCharts();
+            closeSettings();
+        }
+
+        function clearSettings() {
+            if (!confirm("Clear your saved title, salary, dates, and target info from this browser?")) return;
+            appState.settings = { ...DEFAULT_SETTINGS };
+            saveState();
+            renderSettings();
+            renderPaceAndCountdown();
+            updateCharts();
+            closeSettings();
+        }
+
+        function renderSettings() {
+            const s = appState.settings || DEFAULT_SETTINGS;
+            const fmt = (n) => `$${Math.round(n / 1000)}k`;
+
+            document.getElementById('header-subtitle').innerText = `${s.currentTitle} → ${s.targetTitle}`;
+            document.getElementById('banner-target-text').innerText = `Target: ${s.targetTitle} (${fmt(s.targetMin)}–${fmt(s.targetMax)})`;
+
+            const jumpLow = s.targetMin - s.currentSalary;
+            const jumpHigh = s.targetMax - s.currentSalary;
+            const jumpEl = document.getElementById('dash-salary-jump');
+            if (jumpHigh <= 0) {
+                jumpEl.innerText = "Set your target above current";
+            } else {
+                jumpEl.innerText = `+${fmt(Math.max(jumpLow, 0))} - ${fmt(jumpHigh)}`;
+            }
+        }
+
+        function printChecklist() {
+            switchTab('checklist');
+            setTimeout(() => window.print(), 100);
+        }
+
         function confirmReset() {
-            if (confirm("Are you sure you want to reset all checklist progress?")) {
+            if (confirm("Are you sure you want to reset all checklist progress? (Your saved info, dates, and job applications will stay.)")) {
                 appState.checkedTasks = {};
                 appState.projects = { proj1: false, proj2: false, proj3: false, proj4: false };
                 saveState();
                 renderChecklists();
                 updateUI();
                 updateCharts();
+                renderPaceAndCountdown();
+                checkBackupNudge();
             }
         }
     </script>
