@@ -134,6 +134,11 @@
                     <label class="text-xs font-semibold text-slate-300 block mb-1">Target Role Title</label>
                     <input id="settings-target-title" type="text" placeholder="e.g. Remote Data Analyst" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
                 </div>
+                <div>
+                    <label class="text-xs font-semibold text-slate-300 block mb-1">Background Summary (shown on your dashboard)</label>
+                    <textarea id="settings-background-summary" rows="2" placeholder="e.g. Repurposing 10+ years of X experience into Y skills."
+                        class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"></textarea>
+                </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="text-xs font-semibold text-slate-300 block mb-1">Plan Start Date</label>
@@ -192,9 +197,9 @@
                             <i class="fa-solid fa-bullseye"></i>
                             <span id="banner-target-text">Target: Target Role ($90k–$120k)</span>
                         </div>
-                        <h2 class="text-2xl font-bold text-white mb-2">GIS to Power BI Pivot Blueprint</h2>
-                        <p class="text-sm text-slate-400 max-w-2xl leading-relaxed">
-                            Repurposing 10+ years of spatial data logic, database management, and scripting into DAX modeling, Power BI visual architecture, and SQL enterprise analytics.
+                        <h2 class="text-2xl font-bold text-white mb-2" id="banner-headline">Current Role to Target Role Pivot Blueprint</h2>
+                        <p class="text-sm text-slate-400 max-w-2xl leading-relaxed" id="banner-description">
+                            Repurposing prior experience into a new skill set for a career transition. Add your own summary in "My Info."
                         </p>
                     </div>
                 </div>
@@ -257,7 +262,7 @@
                 </div>
 
                 <!-- Backup Nudge Banner (dismissible, only shows when relevant) -->
-                <div id="backup-nudge" class="hidden bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex items-center justify-between gap-3">
+                <div id="backup-nudge" class="hidden no-print bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex items-center justify-between gap-3">
                     <p class="text-xs text-amber-300 flex items-center space-x-2">
                         <i class="fa-solid fa-triangle-exclamation"></i>
                         <span id="backup-nudge-text">It's been a while since you exported a backup.</span>
@@ -325,7 +330,7 @@
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
                         <h3 class="text-base font-bold text-white mb-2">Competency Evolution</h3>
-                        <p class="text-xs text-slate-400 mb-4">Leveraging spatial database logic into business intelligence formulas.</p>
+                        <p class="text-xs text-slate-400 mb-4">Comparing your baseline skills against what your target role requires.</p>
                         <div class="relative h-64 w-full">
                             <canvas id="skillRadarChart"></canvas>
                         </div>
@@ -826,6 +831,7 @@
             targetMin: 90000,
             targetMax: 120000,
             targetTitle: "Target Role",
+            backgroundSummary: "Repurposing prior experience into a new skill set for a career transition.",
             startDate: "",
             examDate: ""
         };
@@ -1442,6 +1448,7 @@
             document.getElementById('settings-target-min').value = s.targetMin || '';
             document.getElementById('settings-target-max').value = s.targetMax || '';
             document.getElementById('settings-target-title').value = s.targetTitle || '';
+            document.getElementById('settings-background-summary').value = s.backgroundSummary || '';
             document.getElementById('settings-start-date').value = s.startDate || '';
             document.getElementById('settings-exam-date').value = s.examDate || '';
             document.getElementById('settings-modal').classList.remove('hidden');
@@ -1458,6 +1465,7 @@
                 targetMin: parseInt(document.getElementById('settings-target-min').value) || DEFAULT_SETTINGS.targetMin,
                 targetMax: parseInt(document.getElementById('settings-target-max').value) || DEFAULT_SETTINGS.targetMax,
                 targetTitle: document.getElementById('settings-target-title').value.trim() || DEFAULT_SETTINGS.targetTitle,
+                backgroundSummary: document.getElementById('settings-background-summary').value.trim() || DEFAULT_SETTINGS.backgroundSummary,
                 startDate: document.getElementById('settings-start-date').value || "",
                 examDate: document.getElementById('settings-exam-date').value || ""
             };
@@ -1510,6 +1518,8 @@
 
             document.getElementById('header-subtitle').innerText = `${s.currentTitle} → ${s.targetTitle}`;
             document.getElementById('banner-target-text').innerText = `Target: ${s.targetTitle} (${fmt(s.targetMin)}–${fmt(s.targetMax)})`;
+            document.getElementById('banner-headline').innerText = `${s.currentTitle} to ${s.targetTitle} Pivot Blueprint`;
+            document.getElementById('banner-description').innerText = s.backgroundSummary;
 
             const jumpLow = s.targetMin - s.currentSalary;
             const jumpHigh = s.targetMax - s.currentSalary;
